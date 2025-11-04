@@ -49,7 +49,15 @@ db.run(table, (err) => {
 }
 
 
-
-
-
 )
+
+
+
+let insert = `INSERT INTO student(id, s_id, fristname, surname, course) VALUES(1, 's001', 'jane', 'doe', '?')`;
+db.run(insert, (err) => {
+  if (err) {
+    return console.error(err.message);
+  } else {
+    return console.log('Row inserted');
+  }
+});
