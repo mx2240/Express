@@ -32,7 +32,7 @@ const db = new sqlite3.Database('./scholl.db', sqlite3.OPEN_READWRITE, (err) => 
 
 
 
-const table = `CREATE TABLE student(id INTEGER PRIMARY KEY, s_id, fristname , surname,  course)`;
+const table = `CREATE TABLE student(id INTEGER PRIMARY KEY,  s_id, fristname , surname,  course)`;
 
 
 db.run(table, (err) => {
@@ -53,7 +53,7 @@ db.run(table, (err) => {
 
 
 
-let insert = `INSERT INTO student( s_id, fristname, surname, course) VALUES( '001', 'jane', 'doe', '?')`;
+let insert = `INSERT INTO student( s_id, fristname, surname, course) VALUES( '002', 'mane', 'doe', '?')`;
 db.run(insert, (err) => {
   if (err) {
     return console.error(err.message);
@@ -83,4 +83,11 @@ db.run(update, (err) => {
 });
 
 
-const delet = `DELETE FROM student WHERE s_id = '001'`;
+// const delet = `DELETE FROM student WHERE s_id = 's001'`;
+// db.run(delet, (err) => {
+//   if (err) {
+//     return console.error(err.message);
+//   } else {
+//     return console.log('Row deleted');
+//   }
+// });
