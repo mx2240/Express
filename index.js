@@ -53,7 +53,7 @@ db.run(table, (err) => {
 
 
 
-let insert = `INSERT INTO student( s_id, fristname, surname, course) VALUES( '001', 'jane', 'doe', '?n')`;
+let insert = `INSERT INTO student( s_id, fristname, surname, course) VALUES( '001', 'jane', 'doe', '?')`;
 db.run(insert, (err) => {
   if (err) {
     return console.error(err.message);
@@ -72,3 +72,15 @@ db.all(select, (err, rows) => {
     console.log(rows);
   }
 });
+
+const update = `UPDATE student SET course = 'web' WHERE s_id = '001'`;
+db.run(update, (err) => {
+  if (err) {
+    return console.error(err.message);
+  } else {
+    return console.log('Row updated');
+  }
+});
+
+
+const delet = `DELETE FROM student WHERE s_id = '001'`;
