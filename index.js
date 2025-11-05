@@ -53,11 +53,22 @@ db.run(table, (err) => {
 
 
 
-let insert = `INSERT INTO student(id, s_id, fristname, surname, course) VALUES(1, 's001', 'jane', 'doe', '?')`;
+let insert = `INSERT INTO student( s_id, fristname, surname, course) VALUES( '001', 'jane', 'doe', '?n')`;
 db.run(insert, (err) => {
   if (err) {
     return console.error(err.message);
   } else {
     return console.log('Row inserted');
+  }
+});
+
+
+
+let select = `SELECT * FROM student`;
+db.all(select, (err, rows) => {
+  if (err) {
+    return console.error(err.message);
+  } else {
+    console.log(rows);
   }
 });
