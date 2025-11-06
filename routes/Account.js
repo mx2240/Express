@@ -2,15 +2,15 @@ const express = require('express');
 const router = express.Router();
 
 
-const { register, login } = require('../controller/AccountController');
-router.post('/register', register);
-router.post('/login', login);
+// const { register, login } = require('');
+// router.post('/register', register);
+// router.post('/login', login);
 
 
 
 
-router.get('/contact', function (req, res, next) {
-    res.send('respond with contact');
+router.get('/account', (req, res,) => {
+    res.send('respond with login');
 });
 
 
