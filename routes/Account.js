@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-
+const AccounntChecker = require('../middleware/usermiddleware');
 
 // const { register, login } = require('');
 // router.post('/register', register);
@@ -9,9 +9,10 @@ const router = express.Router();
 
 
 
-router.get('/account', (req, res,) => {
+router.get('/account', AccounntChecker, (req, res, next) => {
     res.send('respond with login');
 });
+
 
 
 
