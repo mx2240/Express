@@ -7,7 +7,7 @@ const router = express.Router();
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 
-// ✅ Protected route test
+// ✅ Protected route
 router.get("/profile", protect, (req, res) => {
     res.json({
         message: "Welcome to your dashboard!",
