@@ -42,53 +42,53 @@
 
 
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
+// Define Student Schema
 const studentSchema = new mongoose.Schema(
     {
-        user: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User", // Reference to the User model
-            required: true,
+        name: {
+            type: String,
+            required: [true, "Please enter your name"],
+            trim: true,
         },
-        courses: [
+        email: {
+            type: String,
+            required: [true, "Please enter your email"],
+            unique: true,
+            lowercase: true,
+        },
+        password: {
+            type: String,
+            required: [true, "Please enter your password"],
+            minlength: 6,
+        },
+        role: {
+            type: String,
+            default: "student",
+            enum: ["student", "admin"],
+        },
+        enrolledCourses: [
             {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: "Course", // ✅ Fix: ensure the Course model exists
+                ref: "Course",
             },
         ],
-        grades: [
-            {
-                course: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: "Course",
-                },
-                grade: {
-                    type: String,
-                    enum: ["A", "B", "C", "D", "E", "F", "Incomplete", "Pending"],
-                    default: "Pending",
-                },
-            },
-        ],
-        feesPaid: {
-            type: Boolean,
-            default: false,
-        },
-        balance: {
-            type: Number,
-            default: 0,
-        },
-        enrollmentDate: {
-            type: Date,
-            default: Date.now,
-        },
     },
     { timestamps: true }
 );
 
+// 🔐 Hash password before saving
+studentSchema.pre("save", async function (next) {
+    if (!this.isModified("password")) return next();
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+});
+
+// 🔑 Compare passwords during login
+studentSchema.methods.matchPassword = async function (enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password);
+};
+
 module.exports = mongoose.model("Student", studentSchema);
-
-
-
-
-
-
