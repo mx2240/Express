@@ -57,6 +57,7 @@ const studentRoutes = require("./routes/studentRoutes");
 const courseRoutes = require("./routes/courseRoutes");
 const enrollmentRoutes = require("./routes/enrollmentRoutes");
 
+
 dotenv.config();
 connectDB();
 
@@ -70,8 +71,7 @@ require("./models/Student");
 app.use(cors());
 app.use(express.json());
 app.use("/api/courses", courseRoutes);
-app.use("/api/enrollment", enrollmentRoutes);
-
+app.use("/api/enrollments", enrollmentRoutes);
 // ✅ Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/student", studentRoutes);

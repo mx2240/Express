@@ -1,69 +1,63 @@
 const Student = require("../models/Student");
 const Course = require("../models/Course");
 
-// Enroll in a course
+// ✅ Enroll a student in a course (Admin)
 const enrollStudent = async (req, res) => {
     try {
-        const { courseId } = req.params;
-        const student = await Student.findById(req.userId);
+        const { studentId, courseId } = req.body;
 
-        if (!student) return res.status(404).json({ message: "Student not found" });
-
+        const student = await Student.findById(studentId);
         const course = await Course.findById(courseId);
-        if (!course) return res.status(404).json({ message: "Course not found" });
 
+        if (!student || !course) {
+            return res.status(404).json({ message: "Student or Course not found" });
+        }
+
+        // Prevent duplicate enrollment
         if (student.enrolledCourses.includes(courseId)) {
-            return res.status(400).json({ message: "Already enrolled in this course" });
+            return res.status(400).json({ message: "Student already enrolled in this course" });
         }
 
         student.enrolledCourses.push(courseId);
         await student.save();
 
         res.status(200).json({
-            message: `Successfully enrolled in ${course.title}`,
-            enrolledCourses: student.enrolledCourses,
+            message: `✅ ${student.name} successfully enrolled in ${course.title}`,
+            student,
         });
-    } catch (err) {
-        res.status(500).json({ message: "Server error", error: err.message });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error", error });
     }
 };
 
-// Drop a course
-const dropCourse = async (req, res) => {
-    try {
-        const { courseId } = req.params;
-        const student = await Student.findById(req.userId);
-
-        if (!student) return res.status(404).json({ message: "Student not found" });
-
-        student.enrolledCourses = student.enrolledCourses.filter(
-            (id) => id.toString() !== courseId
-        );
-        await student.save();
-
-        res.status(200).json({
-            message: "Course dropped successfully",
-            enrolledCourses: student.enrolledCourses,
-        });
-    } catch (err) {
-        res.status(500).json({ message: "Server error", error: err.message });
-    }
-};
-
-// Get all enrolled courses
+// ✅ Get all enrollments (Admin)
 const getEnrollments = async (req, res) => {
     try {
-        const student = await Student.findById(req.userId).populate("enrolledCourses");
+        const students = await Student.find()
+            .populate("enrolledCourses", "title code credits")
+            .select("name email enrolledCourses");
 
-        if (!student) return res.status(404).json({ message: "Student not found" });
-
-        res.status(200).json({
-            message: "Your enrolled courses",
-            enrolledCourses: student.enrolledCourses,
-        });
-    } catch (err) {
-        res.status(500).json({ message: "Server error", error: err.message });
+        res.status(200).json(students);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error", error });
     }
 };
 
-module.exports = { enrollStudent, dropCourse, getEnrollments };
+// ✅ Get logged-in student’s enrollments
+const getStudentEnrollments = async (req, res) => {
+    try {
+        const student = await Student.findById(req.user.id).populate("enrolledCourses", "title code credits");
+        if (!student) {
+            return res.status(404).json({ message: "Student not found" });
+        }
+
+        res.status(200).json(student.enrolledCourses);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error", error });
+    }
+};
+
+module.exports = { enrollStudent, getEnrollments, getStudentEnrollments };
