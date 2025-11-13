@@ -1,40 +1,51 @@
-// middleware/authMiddleware.js
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
+// ✅ Verify JWT Token (for all authenticated routes)
 const verifyToken = async (req, res, next) => {
     try {
-        const authHeader = req.headers["authorization"] || req.headers["Authorization"];
-        if (!authHeader) return res.status(401).json({ message: "No token provided" });
+        const authHeader = req.headers.authorization;
 
-        if (!authHeader.startsWith("Bearer ")) return res.status(401).json({ message: "Malformed token" });
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({ message: "No token provided" });
+        }
 
         const token = authHeader.split(" ")[1];
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        if (!decoded || !decoded.id) return res.status(401).json({ message: "Invalid token" });
 
-        // Attach user from User collection (without password)
-        const user = await User.findById(decoded.id).select("-password");
-        if (!user) return res.status(404).json({ message: "User not found" });
+        // Attach user info to request
+        req.user = await User.findById(decoded.id).select("-password");
+        if (!req.user) {
+            return res.status(401).json({ message: "Invalid token or user not found" });
+        }
 
-        req.user = user; // will have ._id and .role
         next();
-    } catch (err) {
-        console.error("verifyToken error:", err.message);
-        return res.status(401).json({ message: "Not authorized, token failed" });
+    } catch (error) {
+        console.error("verifyToken error:", error.message);
+        return res.status(401).json({ message: "Invalid or expired token" });
     }
 };
 
-const verifyAdmin = (req, res, next) => {
-    if (!req.user) return res.status(401).json({ message: "No user attached" });
-    if (req.user.role && req.user.role === "admin") return next();
-    return res.status(403).json({ message: "Access denied. Admin only." });
-};
-
+// ✅ Allow only students
 const verifyStudent = (req, res, next) => {
-    if (!req.user) return res.status(401).json({ message: "No user attached" });
-    if (req.user.role && req.user.role === "student") return next();
-    return res.status(403).json({ message: "Access denied. Students only." });
+    if (req.user && req.user.role === "student") {
+        next();
+    } else {
+        return res.status(403).json({ message: "Access denied. Students only." });
+    }
 };
 
-module.exports = { verifyToken, verifyAdmin, verifyStudent };
+// ✅ Allow only admins
+const verifyAdmin = (req, res, next) => {
+    if (req.user && req.user.role === "admin") {
+        next();
+    } else {
+        return res.status(403).json({ message: "Access denied. Admin only." });
+    }
+};
+
+module.exports = {
+    verifyToken,
+    verifyStudent,
+    verifyAdmin,
+};
