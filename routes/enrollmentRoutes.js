@@ -1,19 +1,21 @@
+// routes/enrollmentRoutes.js
 const express = require("express");
 const router = express.Router();
-const { enrollStudent, getEnrollments, getStudentEnrollments } = require("../controllers/enrollmentController");
-const { protect, adminOnly } = require("../middleware/authMiddleware");
+const { enrollStudent, getEnrollments } = require("../controllers/enrollmentController");
+const { verifyToken, verifyStudent, verifyAdmin } = require("../middleware/authMiddleware");
 
-// ==============================
-// 📚 Enrollment Routes
-// ==============================
+console.log("✅ enrollStudent:", typeof enrollStudent);
+console.log("✅ getEnrollments:", typeof getEnrollments);
 
-// ✅ Enroll a student (Admin only)
-router.post("/enroll", protect, adminOnly, enrollStudent);
 
-// ✅ Get all enrollments (Admin only)
-router.get("/", protect, adminOnly, getEnrollments);
+// ✅ Student enrolls in a course
+router.post("/enroll/:courseId", verifyToken, verifyStudent, enrollStudent);
 
-// ✅ Get specific student’s enrollments (Student dashboard)
-router.get("/my-enrollments", protect, getStudentEnrollments);
+// ✅ Admin gets all enrollments
+router.get("/", verifyToken, verifyAdmin, getEnrollments);
+
+
+
+
 
 module.exports = router;

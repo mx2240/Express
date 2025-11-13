@@ -1,18 +1,20 @@
+// routes/authRoutes.js
 const express = require("express");
-const { registerUser, loginUser } = require("../controllers/authController");
-const { protect } = require("../middleware/authMiddleware");
-
 const router = express.Router();
+const {
+    registerUser,
+    loginUser,
+    getUsers
+} = require("../controllers/authController");
+const { verifyToken, verifyAdmin } = require("../middleware/authMiddleware");
 
+// ✅ Register a new user (student or admin)
 router.post("/register", registerUser);
+
+// ✅ Login user
 router.post("/login", loginUser);
 
-// ✅ Protected route
-router.get("/profile", protect, (req, res) => {
-    res.json({
-        message: "Welcome to your dashboard!",
-        user: req.user,
-    });
-});
+// ✅ Admin only: get all users
+router.get("/users", verifyToken, verifyAdmin, getUsers);
 
 module.exports = router;

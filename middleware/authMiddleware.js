@@ -1,34 +1,40 @@
+// middleware/authMiddleware.js
 const jwt = require("jsonwebtoken");
-const Student = require("../models/Student");
+const User = require("../models/User");
 
-// ✅ Verify token and attach user
-const protect = async (req, res, next) => {
-    let token;
+const verifyToken = async (req, res, next) => {
+    try {
+        const authHeader = req.headers["authorization"] || req.headers["Authorization"];
+        if (!authHeader) return res.status(401).json({ message: "No token provided" });
 
-    if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
-        try {
-            token = req.headers.authorization.split(" ")[1];
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            req.user = await Student.findById(decoded.id).select("-password");
-            next();
-        } catch (error) {
-            console.error(error);
-            res.status(401).json({ message: "Not authorized, token failed" });
-        }
-    }
+        if (!authHeader.startsWith("Bearer ")) return res.status(401).json({ message: "Malformed token" });
 
-    if (!token) {
-        return res.status(401).json({ message: "No token, authorization denied" });
-    }
-};
+        const token = authHeader.split(" ")[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if (!decoded || !decoded.id) return res.status(401).json({ message: "Invalid token" });
 
-// ✅ Admin only middleware
-const adminOnly = (req, res, next) => {
-    if (req.user && req.user.role === "admin") {
+        // Attach user from User collection (without password)
+        const user = await User.findById(decoded.id).select("-password");
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        req.user = user; // will have ._id and .role
         next();
-    } else {
-        res.status(403).json({ message: "Access denied. Admin only." });
+    } catch (err) {
+        console.error("verifyToken error:", err.message);
+        return res.status(401).json({ message: "Not authorized, token failed" });
     }
 };
 
-module.exports = { protect, adminOnly };
+const verifyAdmin = (req, res, next) => {
+    if (!req.user) return res.status(401).json({ message: "No user attached" });
+    if (req.user.role && req.user.role === "admin") return next();
+    return res.status(403).json({ message: "Access denied. Admin only." });
+};
+
+const verifyStudent = (req, res, next) => {
+    if (!req.user) return res.status(401).json({ message: "No user attached" });
+    if (req.user.role && req.user.role === "student") return next();
+    return res.status(403).json({ message: "Access denied. Students only." });
+};
+
+module.exports = { verifyToken, verifyAdmin, verifyStudent };
