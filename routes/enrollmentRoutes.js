@@ -1,21 +1,23 @@
 // routes/enrollmentRoutes.js
 const express = require("express");
 const router = express.Router();
-const { enrollStudent, getEnrollments } = require("../controllers/enrollmentController");
+const {
+    enrollStudent,
+    dropCourse,
+    getMyCourses,
+    getAllEnrollments,
+    adminEnroll
+} = require("../controllers/enrollmentController");
+
 const { verifyToken, verifyStudent, verifyAdmin } = require("../middleware/authMiddleware");
 
-console.log("✅ enrollStudent:", typeof enrollStudent);
-console.log("✅ getEnrollments:", typeof getEnrollments);
-
-
-// ✅ Student enrolls in a course
+// Student endpoints
 router.post("/enroll/:courseId", verifyToken, verifyStudent, enrollStudent);
+router.post("/drop/:courseId", verifyToken, verifyStudent, dropCourse);
+router.get("/my-courses", verifyToken, verifyStudent, getMyCourses);
 
-// ✅ Admin gets all enrollments
-router.get("/", verifyToken, verifyAdmin, getEnrollments);
-
-
-
-
+// Admin endpoints
+router.get("/", verifyToken, verifyAdmin, getAllEnrollments);
+router.post("/admin/enroll", verifyToken, verifyAdmin, adminEnroll);
 
 module.exports = router;
