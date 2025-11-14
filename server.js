@@ -8,6 +8,7 @@ const studentRoutes = require("./routes/studentRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const gradeRoutes = require("./routes/gradeRoutes");
 const announcementRoutes = require("./routes/announcementRoutes");
+const inquiryRoutes = require("./routes/inquiryRoutes");
 
 dotenv.config();
 connectDB();
@@ -21,6 +22,7 @@ app.use("/api/student", studentRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/grades", gradeRoutes);
 app.use("/api/announcements", announcementRoutes);
+app.use("/api/inquiries", inquiryRoutes);
 
 // ✅ Import Routes
 const authRoutes = require("./routes/authRoutes");
