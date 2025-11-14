@@ -16,8 +16,11 @@ exports.verifyToken = async (req, res, next) => {
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        req.user = decoded; // contains { id, role }
+        // Fetch user from DB to attach full object
+        const user = await User.findById(decoded.id);
+        if (!user) return res.status(401).json({ message: "User not found" });
 
+        req.user = user; // Now contains _id, role, name, email, etc.
         next();
     } catch (error) {
         return res.status(401).json({ message: "Invalid token", error: error.message });
@@ -28,7 +31,7 @@ exports.verifyToken = async (req, res, next) => {
 // Verify Student
 // ========================================
 exports.verifyStudent = (req, res, next) => {
-    if (req.user.role !== "student") {
+    if (!req.user || req.user.role !== "student") {
         return res.status(403).json({ message: "Access denied. Students only." });
     }
     next();
@@ -38,7 +41,7 @@ exports.verifyStudent = (req, res, next) => {
 // Verify Admin
 // ========================================
 exports.verifyAdmin = (req, res, next) => {
-    if (req.user.role !== "admin") {
+    if (!req.user || req.user.role !== "admin") {
         return res.status(403).json({ message: "Access denied. Admin only." });
     }
     next();
