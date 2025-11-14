@@ -1,53 +1,30 @@
-const Student = require("../models/Student");
-const User = require("../models/User");
+const Enrollment = require("../models/Enrollment");
+const Course = require("../models/Course");
+const Student = require("../models/User");
 
-// @desc Get student dashboard
-// @route GET /api/student/dashboard
-// @access Private
-const getDashboard = async (req, res) => {
+exports.getStudentDashboard = async (req, res) => {
     try {
-        const student = await Student.findOne({ user: req.user._id })
-            .populate("user", "name email role")
-            .populate("courses", "title code credits");
+        const studentId = req.user.id;
 
-        if (!student) {
-            return res.status(404).json({ message: "Student not found" });
-        }
+        // Get student data
+        const student = await Student.findById(studentId).select("-password");
+
+        // Get student's enrolled courses
+        const enrollments = await Enrollment.find({ student: studentId }).populate("course");
 
         res.json({
-            message: "Student dashboard data",
+            message: "Student dashboard loaded",
             student,
-
+            enrolledCourses: enrollments.map(en => ({
+                courseId: en.course._id,
+                title: en.course.title,
+                instructor: en.course.instructor,
+                credits: en.course.credits,
+                enrolledAt: en.createdAt
+            }))
         });
 
-        console.log("Looking for student with user ID:", req.user._id);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Server error" });
-
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 };
-
-
-// @desc Update student profile
-// @route PUT /api/student/profile
-// @access Private
-const updateProfile = async (req, res) => {
-    try {
-        const { name, email } = req.body;
-        const user = await User.findById(req.user._id);
-
-        if (!user) return res.status(404).json({ message: "User not found" });
-
-        if (name) user.name = name;
-        if (email) user.email = email;
-        await user.save();
-
-        res.json({ message: "Profile updated successfully", user });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Server error" });
-    }
-};
-
-module.exports = { getDashboard, updateProfile };

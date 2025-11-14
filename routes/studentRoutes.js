@@ -1,11 +1,10 @@
 const express = require("express");
-const { getDashboard, updateProfile } = require("../controllers/studentController");
-const { protect } = require("../middleware/authMiddleware");
-
 const router = express.Router();
 
-// ✅ Protected routes
-router.get("/dashboard", protect, getDashboard);
-router.put("/profile", protect, updateProfile);
+const { verifyToken, verifyStudent } = require("../middleware/authMiddleware");
+const { getStudentDashboard } = require("../controllers/studentController");
+
+// Student dashboard
+router.get("/dashboard", verifyToken, verifyStudent, getStudentDashboard);
 
 module.exports = router;

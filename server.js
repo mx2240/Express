@@ -4,6 +4,8 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const enrollmentRoutes = require("./routes/enrollmentRoutes");
 const courseRoutes = require("./routes/courseRoutes");
+const studentRoutes = require("./routes/studentRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 dotenv.config();
 connectDB();
@@ -13,6 +15,8 @@ app.use(cors());
 app.use(express.json());
 app.use("/api/enrollments", enrollmentRoutes);
 app.use("/api/courses", courseRoutes);
+app.use("/api/student", studentRoutes);
+app.use("/api/admin", adminRoutes);
 
 
 // ✅ Import Routes
