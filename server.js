@@ -12,6 +12,12 @@ const inquiryRoutes = require("./routes/inquiryRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const feeRoutes = require("./routes/feeRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
+const timetableRoutes = require("./routes/timetableRoutes");
+const libraryRoutes = require("./routes/libraryRoutes");
+
+
+
+
 
 dotenv.config();
 connectDB();
@@ -29,6 +35,10 @@ app.use("/api/inquiries", inquiryRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/fees", feeRoutes);
 app.use("/api/attendance", attendanceRoutes);
+app.use("/api/timetable", timetableRoutes);
+app.use("/api/library", libraryRoutes);
+app.use("/api/transport", require("./routes/transportRoutes"));
+app.use("/api/drivers", require("./routes/driverRoutes"));
 
 // ✅ Import Routes
 const authRoutes = require("./routes/authRoutes");
