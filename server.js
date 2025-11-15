@@ -23,6 +23,7 @@ const busAttendanceRoutes = require("./routes/busAttendanceRoutes");
 const parentRoutes = require("./routes/parentRoutes");
 const authRoutes = require("./routes/authRoutes");
 const reportRoutes = require("./routes/reportRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 dotenv.config();
 connectDB();
@@ -56,6 +57,7 @@ app.use("/api/drivers", driverRoutes);
 app.use("/api/hostels", hostelRoutes);
 app.use("/api/parents", parentRoutes); // Parent routes
 app.use("/api/reports", reportRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Auth routes (login/register)
 app.use("/api/auth", authRoutes);
