@@ -3,13 +3,12 @@ const Student = require("../models/Student");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
-// Register Parent (Admin Only)
+// ------------------ Register Parent (Admin Only) ------------------
 const registerParent = async (req, res) => {
     try {
         const { name, email, phone, relation, children, password } = req.body;
-
         if (!name || !email || !relation || !password) {
-            return res.status(400).json({ message: "Name, email, relation and password are required" });
+            return res.status(400).json({ message: "Name, email, relation, and password are required" });
         }
 
         const existing = await Parent.findOne({ email });
@@ -28,82 +27,58 @@ const registerParent = async (req, res) => {
             phone,
             relation,
             password: hashed,
-            children: validChildren.map(c => c._id),
-            role: "parent"
+            children: validChildren.map(c => c._id)
         });
 
-        return res.status(201).json({
-            message: "Parent registered successfully",
-            parent
-        });
+        res.status(201).json({ message: "Parent registered successfully", parent });
     } catch (error) {
         console.error("registerParent error:", error);
-        return res.status(500).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 };
 
-// Parent login
+// ------------------ Login Parent ------------------
 const loginParent = async (req, res) => {
     try {
         const { email, password } = req.body;
-
         const parent = await Parent.findOne({ email });
         if (!parent) return res.status(404).json({ message: "Parent not found" });
 
         const isMatch = await bcrypt.compare(password, parent.password);
         if (!isMatch) return res.status(400).json({ message: "Invalid password" });
 
-        const token = jwt.sign(
-            { id: parent._id, role: "parent" },
-            process.env.JWT_SECRET,
-            { expiresIn: "7d" }
-        );
+        const token = jwt.sign({ id: parent._id, role: "parent" }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
-        res.json({
-            message: "Login successful",
-            token,
-            parent
-        });
+        res.json({ message: "Login successful", token, parent });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
-/* ------------------ Get Parent Children ------------------ */
 // ------------------ Get Parent Children ------------------
 const getParentChildren = async (req, res) => {
     try {
-        const parentId = req.user._id; // automatically use logged-in parent
+        const parentId = req.params.parentId;
+
         const parent = await Parent.findById(parentId).populate("children");
         if (!parent) return res.status(404).json({ message: "Parent not found" });
 
         res.json(parent.children);
     } catch (error) {
-        console.error("getParentChildren error:", error);
-        res.status(500).json({ message: "Server error", error: error.message });
+        res.status(500).json({ message: error.message });
     }
 };
 
-
-// Get Child Dashboard
+// ------------------ Get Child Dashboard ------------------
 const getChildDashboard = async (req, res) => {
     try {
         const studentId = req.params.studentId;
         const student = await Student.findById(studentId);
         if (!student) return res.status(404).json({ message: "Student not found" });
-
         res.json(student);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
-module.exports = {
-    registerParent,
-    loginParent,
-    getParentChildren,
-    getChildDashboard
-};
-
-
-
+module.exports = { registerParent, loginParent, getParentChildren, getChildDashboard };
