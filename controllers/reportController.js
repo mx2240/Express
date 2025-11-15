@@ -1,68 +1,76 @@
-const Student = require("../models/Student");
+const Report = require("../models/Report");
 const Attendance = require("../models/Attendance");
 const Grade = require("../models/Grade");
 const Fee = require("../models/Fee");
+const Notification = require("../models/Notification");
 
-// -------------------- Student Report --------------------
-const getStudentReport = async (req, res) => {
+// -------------------- Generate a Report --------------------
+const generateReport = async (req, res) => {
     try {
-        const studentId = req.params.studentId;
+        const { type, recipient, recipientModel, title, description } = req.body;
 
-        const student = await Student.findById(studentId);
-        if (!student) return res.status(404).json({ message: "Student not found" });
+        if (!type || !title) {
+            return res.status(400).json({ message: "Report type and title are required" });
+        }
 
-        const attendance = await Attendance.find({ student: studentId }).sort({ date: -1 });
-        const grades = await Grade.find({ student: studentId }).populate("course", "title");
-        const fees = await Fee.find({ student: studentId }).sort({ dueDate: -1 });
+        let reportData = [];
 
-        return res.json({
-            student,
-            attendance,
-            grades,
-            fees
+        if (type === "attendance") {
+            reportData = await Attendance.find({ student: recipient }).populate("student course");
+        } else if (type === "grades") {
+            reportData = await Grade.find({ student: recipient }).populate("student course");
+        } else if (type === "fees") {
+            reportData = await Fee.find({ student: recipient });
+        } else if (type === "custom") {
+            reportData = [];
+        }
+
+        const report = await Report.create({
+            title,
+            description,
+            type,
+            recipient,
+            recipientModel
         });
+
+        // Optionally send notification
+        if (recipient) {
+            await Notification.create({
+                title: `New Report: ${title}`,
+                message: description || `A new ${type} report is available.`,
+                recipient,
+                recipientModel
+            });
+        }
+
+        res.status(201).json({ message: "Report generated", report, data: reportData });
     } catch (error) {
-        console.error("getStudentReport error:", error);
-        return res.status(500).json({ message: "Server error", error: error.message });
+        console.error("generateReport error:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
     }
 };
 
-// -------------------- Course Report --------------------
-const getCourseReport = async (req, res) => {
+// -------------------- Get Reports for User --------------------
+const getReports = async (req, res) => {
     try {
-        const courseId = req.params.courseId;
+        const userId = req.user._id;
+        const role = req.user.role;
 
-        const grades = await Grade.find({ course: courseId }).populate("student", "name email");
-        const attendance = await Attendance.find({ course: courseId }).populate("student", "name email");
+        let modelName;
+        if (role === "student") modelName = "Student";
+        else if (role === "parent") modelName = "Parent";
+        else modelName = "User";
 
-        return res.json({ courseId, grades, attendance });
+        const reports = await Report.find({
+            recipient: userId,
+            recipientModel: modelName
+        }).sort({ createdAt: -1 });
+
+        res.json(reports);
     } catch (error) {
-        console.error("getCourseReport error:", error);
-        return res.status(500).json({ message: "Server error", error: error.message });
+        console.error("getReports error:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
     }
 };
 
-// -------------------- Monthly Attendance Report --------------------
-const getMonthlyAttendanceReport = async (req, res) => {
-    try {
-        const { month, year } = req.params; // e.g., month=11, year=2025
-
-        const start = new Date(year, month - 1, 1);
-        const end = new Date(year, month, 0, 23, 59, 59);
-
-        const attendance = await Attendance.find({ date: { $gte: start, $lte: end } })
-            .populate("student", "name email")
-            .populate("course", "title");
-
-        return res.json({ month, year, attendance });
-    } catch (error) {
-        console.error("getMonthlyAttendanceReport error:", error);
-        return res.status(500).json({ message: "Server error", error: error.message });
-    }
-};
-
-module.exports = {
-    getStudentReport,
-    getCourseReport,
-    getMonthlyAttendanceReport
-};
+module.exports = { generateReport, getReports };

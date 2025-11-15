@@ -1,71 +1,69 @@
+const Report = require("../models/Report");
 const Notification = require("../models/Notification");
 
-// -------------------- Create Notification --------------------
-const createNotification = async (req, res) => {
+// -------------------- Create Report --------------------
+const createReport = async (req, res) => {
     try {
-        const { title, message, recipient, recipientModel } = req.body;
+        const { title, description, recipient, recipientModel } = req.body;
 
-        if (!title || !message || !recipient || !recipientModel) {
+        if (!title || !description || !recipient || !recipientModel) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        const notification = await Notification.create({
-            title,
-            message,
-            recipient,
-            recipientModel
-        });
-
-        return res.status(201).json({ message: "Notification sent", notification });
+        const report = await Report.create({ title, description, recipient, recipientModel });
+        res.status(201).json({ message: "Report created", report });
     } catch (error) {
-        console.error("createNotification error:", error);
-        return res.status(500).json({ message: "Server error", error: error.message });
+        res.status(500).json({ message: "Server error", error: error.message });
     }
 };
 
-// -------------------- Get Notifications for User --------------------
+// -------------------- Send Notification --------------------
+const sendNotification = async (req, res) => {
+    try {
+        const { message, recipient, recipientModel } = req.body;
+
+        if (!message || !recipient || !recipientModel) {
+            return res.status(400).json({ message: "All fields are required" });
+        }
+
+        const notification = await Notification.create({ message, recipient, recipientModel });
+        res.status(201).json({ message: "Notification sent", notification });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+// -------------------- Get Notifications --------------------
 const getNotifications = async (req, res) => {
     try {
-        const userId = req.user._id;
-        const role = req.user.role;
-
-        let modelName;
-        if (role === "student") modelName = "Student";
-        else if (role === "parent") modelName = "Parent";
-        else modelName = "User"; // Admin or other users
+        const user = req.user;
 
         const notifications = await Notification.find({
-            recipient: userId,
-            recipientModel: modelName
+            recipient: user._id,
+            recipientModel: user.role === "parent" ? "Parent" : "Student"
         }).sort({ createdAt: -1 });
 
-        return res.json(notifications);
+        res.json(notifications);
     } catch (error) {
-        console.error("getNotifications error:", error);
-        return res.status(500).json({ message: "Server error", error: error.message });
+        res.status(500).json({ message: "Server error", error: error.message });
     }
 };
 
 // -------------------- Mark Notification as Read --------------------
-const markAsRead = async (req, res) => {
+const markNotificationRead = async (req, res) => {
     try {
-        const notificationId = req.params.notificationId;
-
-        const notification = await Notification.findById(notificationId);
+        const { id } = req.params;
+        const notification = await Notification.findByIdAndUpdate(id, { read: true }, { new: true });
         if (!notification) return res.status(404).json({ message: "Notification not found" });
-
-        notification.read = true;
-        await notification.save();
-
-        return res.json({ message: "Notification marked as read", notification });
+        res.json({ message: "Notification marked as read", notification });
     } catch (error) {
-        console.error("markAsRead error:", error);
-        return res.status(500).json({ message: "Server error", error: error.message });
+        res.status(500).json({ message: "Server error", error: error.message });
     }
 };
 
 module.exports = {
-    createNotification,
+    createReport,
+    sendNotification,
     getNotifications,
-    markAsRead
+    markNotificationRead
 };

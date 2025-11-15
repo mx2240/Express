@@ -11,7 +11,6 @@ const adminRoutes = require("./routes/adminRoutes");
 const gradeRoutes = require("./routes/gradeRoutes");
 const announcementRoutes = require("./routes/announcementRoutes");
 const inquiryRoutes = require("./routes/inquiryRoutes");
-const dashboardRoutes = require("./routes/dashboardRoutes");
 const feeRoutes = require("./routes/feeRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 const timetableRoutes = require("./routes/timetableRoutes");
@@ -24,6 +23,9 @@ const parentRoutes = require("./routes/parentRoutes");
 const authRoutes = require("./routes/authRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
+
+
 
 dotenv.config();
 connectDB();
@@ -58,6 +60,7 @@ app.use("/api/hostels", hostelRoutes);
 app.use("/api/parents", parentRoutes); // Parent routes
 app.use("/api/reports", reportRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 // Auth routes (login/register)
 app.use("/api/auth", authRoutes);

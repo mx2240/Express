@@ -1,21 +1,14 @@
+// routes/reportRoutes.js
 const express = require("express");
 const router = express.Router();
-const {
-    getStudentReport,
-    getCourseReport,
-    getMonthlyAttendanceReport
-} = require("../controllers/reportController");
+const { createReport, getReports, getReport } = require("../controllers/reportController");
+const { verifyToken, verifyAdmin } = require("../middleware/authMiddleware");
 
-const { verifyToken, verifyAdmin, verifyStudent, verifyParent } = require("../middleware/authMiddleware");
+// Admin can create reports
+router.post("/", verifyToken, verifyAdmin, createReport);
 
-// -------------------- Reports --------------------
-// Student report (Admin/Parent/Student)
-router.get("/student/:studentId", verifyToken, getStudentReport);
-
-// Course report (Admin only)
-router.get("/course/:courseId", verifyToken, verifyAdmin, getCourseReport);
-
-// Monthly attendance report (Admin only)
-router.get("/attendance/:month/:year", verifyToken, verifyAdmin, getMonthlyAttendanceReport);
+// Everyone (with token) can view reports
+router.get("/", verifyToken, getReports);
+router.get("/:reportId", verifyToken, getReport);
 
 module.exports = router;
