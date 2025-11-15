@@ -14,6 +14,7 @@ const feeRoutes = require("./routes/feeRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 const timetableRoutes = require("./routes/timetableRoutes");
 const libraryRoutes = require("./routes/libraryRoutes");
+const hostelRoutes = require("./routes/hostelRoutes");
 
 
 
@@ -39,6 +40,9 @@ app.use("/api/timetable", timetableRoutes);
 app.use("/api/library", libraryRoutes);
 app.use("/api/transport", require("./routes/transportRoutes"));
 app.use("/api/drivers", require("./routes/driverRoutes"));
+app.use("/api/attendance", require("./routes/busAttendanceRoutes"));
+app.use("/api/hostels", hostelRoutes);
+
 
 // ✅ Import Routes
 const authRoutes = require("./routes/authRoutes");
