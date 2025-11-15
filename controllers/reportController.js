@@ -1,76 +1,47 @@
+// controllers/reportController.js
 const Report = require("../models/Report");
-const Attendance = require("../models/Attendance");
-const Grade = require("../models/Grade");
-const Fee = require("../models/Fee");
-const Notification = require("../models/Notification");
 
-// -------------------- Generate a Report --------------------
-const generateReport = async (req, res) => {
+// Create report
+const createReport = async (req, res) => {
     try {
-        const { type, recipient, recipientModel, title, description } = req.body;
-
+        const { type, title, description, data } = req.body;
         if (!type || !title) {
-            return res.status(400).json({ message: "Report type and title are required" });
-        }
-
-        let reportData = [];
-
-        if (type === "attendance") {
-            reportData = await Attendance.find({ student: recipient }).populate("student course");
-        } else if (type === "grades") {
-            reportData = await Grade.find({ student: recipient }).populate("student course");
-        } else if (type === "fees") {
-            reportData = await Fee.find({ student: recipient });
-        } else if (type === "custom") {
-            reportData = [];
+            return res.status(400).json({ message: "Type and title are required" });
         }
 
         const report = await Report.create({
+            type,
             title,
             description,
-            type,
-            recipient,
-            recipientModel
+            data,
+            createdBy: req.user._id
         });
 
-        // Optionally send notification
-        if (recipient) {
-            await Notification.create({
-                title: `New Report: ${title}`,
-                message: description || `A new ${type} report is available.`,
-                recipient,
-                recipientModel
-            });
-        }
-
-        res.status(201).json({ message: "Report generated", report, data: reportData });
+        res.status(201).json({ message: "Report created", report });
     } catch (error) {
-        console.error("generateReport error:", error);
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
 
-// -------------------- Get Reports for User --------------------
+// Get all reports
 const getReports = async (req, res) => {
     try {
-        const userId = req.user._id;
-        const role = req.user.role;
-
-        let modelName;
-        if (role === "student") modelName = "Student";
-        else if (role === "parent") modelName = "Parent";
-        else modelName = "User";
-
-        const reports = await Report.find({
-            recipient: userId,
-            recipientModel: modelName
-        }).sort({ createdAt: -1 });
-
+        const reports = await Report.find().populate("createdBy", "name email").sort({ createdAt: -1 });
         res.json(reports);
     } catch (error) {
-        console.error("getReports error:", error);
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
 
-module.exports = { generateReport, getReports };
+// Get single report
+const getReport = async (req, res) => {
+    try {
+        const report = await Report.findById(req.params.reportId).populate("createdBy", "name email");
+        if (!report) return res.status(404).json({ message: "Report not found" });
+        res.json(report);
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+module.exports = { createReport, getReports, getReport };

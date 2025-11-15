@@ -1,14 +1,26 @@
 const express = require("express");
 const router = express.Router();
-const { verifyToken, verifyAdmin, verifyParent, verifyStudent } = require("../middleware/authMiddleware");
-const { createReport, sendNotification, getNotifications, markNotificationRead } = require("../controllers/notificationController");
+const { verifyToken } = require("../middleware/authMiddleware");
 
-// Admin routes
-router.post("/report", verifyToken, verifyAdmin, createReport);
-router.post("/send", verifyToken, verifyAdmin, sendNotification);
+const {
+    createReport,
+    sendNotification,
+    fetchNotifications,
+    markNotificationRead
+} = require("../controllers/notificationController");
 
-// User routes (Student / Parent)
-router.get("/", verifyToken, getNotifications);
-router.patch("/:id/read", verifyToken, markNotificationRead);
+// -------------------- Routes --------------------
+
+// Create report
+router.post("/report", verifyToken, createReport);
+
+// Send notification
+router.post("/send", verifyToken, sendNotification);
+
+// Get notifications for logged-in user
+router.get("/", verifyToken, fetchNotifications);
+
+// Mark notification as read
+router.put("/:id/read", verifyToken, markNotificationRead);
 
 module.exports = router;

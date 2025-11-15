@@ -1,15 +1,13 @@
-const Report = require("../models/Report");
 const Notification = require("../models/Notification");
+const Report = require("../models/Report");
 
 // -------------------- Create Report --------------------
 const createReport = async (req, res) => {
     try {
         const { title, description, recipient, recipientModel } = req.body;
-
         if (!title || !description || !recipient || !recipientModel) {
             return res.status(400).json({ message: "All fields are required" });
         }
-
         const report = await Report.create({ title, description, recipient, recipientModel });
         res.status(201).json({ message: "Report created", report });
     } catch (error) {
@@ -21,11 +19,9 @@ const createReport = async (req, res) => {
 const sendNotification = async (req, res) => {
     try {
         const { message, recipient, recipientModel } = req.body;
-
         if (!message || !recipient || !recipientModel) {
             return res.status(400).json({ message: "All fields are required" });
         }
-
         const notification = await Notification.create({ message, recipient, recipientModel });
         res.status(201).json({ message: "Notification sent", notification });
     } catch (error) {
@@ -33,16 +29,14 @@ const sendNotification = async (req, res) => {
     }
 };
 
-// -------------------- Get Notifications --------------------
-const getNotifications = async (req, res) => {
+// -------------------- Fetch Notifications --------------------
+const fetchNotifications = async (req, res) => {
     try {
         const user = req.user;
-
         const notifications = await Notification.find({
             recipient: user._id,
             recipientModel: user.role === "parent" ? "Parent" : "Student"
         }).sort({ createdAt: -1 });
-
         res.json(notifications);
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
@@ -64,6 +58,6 @@ const markNotificationRead = async (req, res) => {
 module.exports = {
     createReport,
     sendNotification,
-    getNotifications,
+    fetchNotifications,
     markNotificationRead
 };
