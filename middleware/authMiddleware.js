@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const Parent = require("../models/Parent");
 
+// Verify Token
 exports.verifyToken = async (req, res, next) => {
     try {
         const header = req.headers['authorization'];
@@ -25,19 +26,20 @@ exports.verifyToken = async (req, res, next) => {
     }
 };
 
+// Role-based
 exports.verifyAdmin = (req, res, next) => {
-    if (!req.user || req.user.role !== "admin") return res.status(403).json({ message: "Access denied. Admin only." });
+    if (!req.user || req.user.role !== "admin") return res.status(403).json({ message: "Admin only" });
     next();
 };
 
 exports.verifyParent = (req, res, next) => {
-    if (!req.user || req.user.role !== "parent") return res.status(403).json({ message: "Access denied. Parents only." });
+    if (!req.user || req.user.role !== "parent") return res.status(403).json({ message: "Parents only" });
     if (req.params.parentId && req.user._id.toString() !== req.params.parentId)
-        return res.status(403).json({ message: "Access denied. You can only view your own children." });
+        return res.status(403).json({ message: "Access denied. Only your own children." });
     next();
 };
 
 exports.verifyStudent = (req, res, next) => {
-    if (!req.user || req.user.role !== "student") return res.status(403).json({ message: "Access denied. Students only." });
+    if (!req.user || req.user.role !== "student") return res.status(403).json({ message: "Students only" });
     next();
 };

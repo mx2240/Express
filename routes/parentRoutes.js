@@ -1,12 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const { registerParent, loginParent, getParentChildren, getChildDashboard } = require("../controllers/parentController");
-const { verifyToken, verifyParent, verifyAdmin } = require("../middleware/authMiddleware");
+const { verifyToken, verifyAdmin, verifyParent } = require("../middleware/authMiddleware");
 
-// Admin only: register parent
+// Register parent (Admin only)
 router.post("/register", verifyToken, verifyAdmin, registerParent);
 
-// Parent login (no token needed)
+// Parent login
 router.post("/login", loginParent);
 
 // Parent-only: get their children

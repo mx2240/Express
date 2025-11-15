@@ -3,13 +3,12 @@ const Student = require("../models/Student");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
-// ------------------ Register Parent (Admin Only) ------------------
+// ---------------- Register Parent (Admin only) ----------------
 const registerParent = async (req, res) => {
     try {
-        const { name, email, phone, relation, children, password } = req.body;
-        if (!name || !email || !relation || !password) {
-            return res.status(400).json({ message: "Name, email, relation, and password are required" });
-        }
+        const { name, email, phone, relation, password, children } = req.body;
+        if (!name || !email || !relation || !password)
+            return res.status(400).json({ message: "Name, email, relation, and password required" });
 
         const existing = await Parent.findOne({ email });
         if (existing) return res.status(400).json({ message: "Parent already exists" });
@@ -17,7 +16,7 @@ const registerParent = async (req, res) => {
         const hashed = await bcrypt.hash(password, 10);
 
         let validChildren = [];
-        if (children && children.length > 0) {
+        if (children && children.length) {
             validChildren = await Student.find({ _id: { $in: children } });
         }
 
@@ -37,7 +36,7 @@ const registerParent = async (req, res) => {
     }
 };
 
-// ------------------ Login Parent ------------------
+// ---------------- Parent Login ----------------
 const loginParent = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -55,11 +54,10 @@ const loginParent = async (req, res) => {
     }
 };
 
-// ------------------ Get Parent Children ------------------
+// ---------------- Get Parent Children ----------------
 const getParentChildren = async (req, res) => {
     try {
         const parentId = req.params.parentId;
-
         const parent = await Parent.findById(parentId).populate("children");
         if (!parent) return res.status(404).json({ message: "Parent not found" });
 
@@ -69,12 +67,13 @@ const getParentChildren = async (req, res) => {
     }
 };
 
-// ------------------ Get Child Dashboard ------------------
+// ---------------- Get Child Dashboard ----------------
 const getChildDashboard = async (req, res) => {
     try {
         const studentId = req.params.studentId;
         const student = await Student.findById(studentId);
         if (!student) return res.status(404).json({ message: "Student not found" });
+
         res.json(student);
     } catch (error) {
         res.status(500).json({ message: error.message });
