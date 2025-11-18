@@ -24,6 +24,8 @@ const authRoutes = require("./routes/authRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const adminSettingsRoutes = require("./routes/adminSettingsRoutes");
+const adminProfileRoutes = require("./routes/adminProfileRoutes");
 
 
 
@@ -61,6 +63,8 @@ app.use("/api/parents", parentRoutes); // Parent routes
 app.use("/api/reports", reportRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/admin/settings", adminSettingsRoutes);
+app.use("/api/admin/profile", adminProfileRoutes);
 
 // Auth routes (login/register)
 app.use("/api/auth", authRoutes);
